@@ -5893,7 +5893,7 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
  * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Data item.
  * @param {anychart.ganttModule.elements.TimelineElement} element - Element whose tags data to use.
  * @param {number} row - Row number.
- * @return {anychart.ganttModule.TimeLine.Tag?} - Tag or null, if tag is not found.
+ * @return {?anychart.ganttModule.TimeLine.Tag} - Tag or null, if tag is not found.
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement_ = function(item, element, row) {
@@ -5912,18 +5912,20 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement_ = function(item,
 
 
 /**
- * Insert tags, sorted by their bounds.
+ * Sorting function for binary insert, used while collecting tags for label crop.
  * If anchor is left, sort by bounds left side.
  * If anchor is center, sort by bounds center.
  * If anchor is right, sort by right side.
- * @param {anychart.ganttModule.TimeLine.Tag?} tag1
- * @param {anychart.ganttModule.TimeLine.Tag?} tag2
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag1
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag2
  * @return {number}
  * @private
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_ = function(tag1, tag2) {
   var anchor = /** @type {string} */(tag1.label.getFinalSettings('anchor'));
 
+  // TODO: Probably sort by tag bounds?
+  // return (tag1.bounds.left - tag2.bounds.left) || -1;
   var tag1bounds = tag1.label.getTextElement().getBounds();
   var tag2bounds = tag2.label.getTextElement().getBounds();
 
