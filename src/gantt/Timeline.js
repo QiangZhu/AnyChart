@@ -618,8 +618,6 @@ anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
   var map = {};
   anychart.core.settings.createDescriptors(map, [
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'columnStroke', anychart.core.settings.strokeNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'zoomOnMouseWheel', anychart.core.settings.booleanNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'workingFill', anychart.core.settings.fillNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'notWorkingFill', anychart.core.settings.fillNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'holidaysFill', anychart.core.settings.fillNormalizer],
@@ -2835,6 +2833,22 @@ anychart.ganttModule.TimeLine.prototype.resolveAutoAnchorByType_ = function(posi
 
 
 //endregion
+/**
+ * General descriptors.
+ * @type {!Object.<string, anychart.core.settings.PropertyDescriptor>}
+ */
+anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS = (function() {
+  /** @type {!Object.<string, anychart.core.settings.PropertyDescriptor>} */
+  var map = {};
+  anychart.core.settings.createDescriptors(map, [
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'zoomOnMouseWheel', anychart.core.settings.booleanNormalizer]
+  ]);
+  return map;
+})();
+anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS);
+
+
 /**
  * Draws thumb preview.
  * @param {goog.fx.DragEvent} event - Event.
