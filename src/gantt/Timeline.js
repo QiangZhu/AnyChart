@@ -5926,17 +5926,15 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_ = function(tag1, tag2) {
 
   // TODO: Probably sort by tag bounds?
   // return (tag1.bounds.left - tag2.bounds.left) || -1;
-  var tag1bounds = tag1.label.getTextElement().getBounds();
-  var tag2bounds = tag2.label.getTextElement().getBounds();
 
   if (goog.string.startsWith(anchor, 'left')) {
-    return (tag1bounds.left - tag2bounds.left) || (tag1bounds.width - tag2bounds.width) || -1;
+    return (tag1.bounds.left - tag2.bounds.left) || (tag1.bounds.width - tag2.bounds.width) || -1;
   } else if (goog.string.startsWith(anchor, 'center')) {
-    var tag1CenterX = tag1bounds.left + tag1bounds.width / 2;
-    var tag2CenterX = tag2bounds.left + tag2bounds.width / 2;
-    return (tag1CenterX - tag2CenterX) || (tag1bounds.width - tag2bounds.width) || -1;
+    var tag1CenterX = tag1.bounds.left + tag1.bounds.width / 2;
+    var tag2CenterX = tag2.bounds.left + tag2.bounds.width / 2;
+    return (tag1CenterX - tag2CenterX) || (tag1.bounds.width - tag2.bounds.width) || -1;
   } else {
-    return (tag1bounds.getRight() - tag2bounds.getRight()) || (tag1bounds.width - tag2bounds.width) || -1;
+    return (tag1.bounds.getRight() - tag2.bounds.getRight()) || (tag1.bounds.width - tag2.bounds.width) || -1;
   }
 };
 
@@ -6094,6 +6092,7 @@ anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cu
 
   var newWidth = labelFinalRight - labelFinalLeft;
 
+  //TODO: Check if finalSettings are needed (they most probably are)
   var curTagLabelAnchor = cur.label.getFinalSettings('anchor').split('-')[0];
   if (curTagLabelAnchor === 'center') {
     var curTagLabelPosition = cur.label.getFinalSettings('position').split('-')[0];
