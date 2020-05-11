@@ -5995,13 +5995,11 @@ anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tag) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
-  // Returns all uncollapsed items.
   var visibleItems = this.getVisibleItems();
 
-  var controller = this.controller;
   // Get indexes of items currently displayed on timeline.
-  var startIndex = /** @type {number} */(controller.startIndex());
-  var endIndex = /** @type {number} */(controller.endIndex());
+  var startIndex = /** @type {number} */(this.controller.startIndex());
+  var endIndex = /** @type {number} */(this.controller.endIndex());
 
   for (var i = startIndex; i <= endIndex; i++) {
     var item = visibleItems[i];
@@ -6035,6 +6033,7 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
   var halfDeltaX = cur.bounds.getRight() + delta / 2;
 
   /*
+  //TODO: Illustration
     As simple as that:
       1) If next label is righter than next tag itself, right restraint is left side of the next tag.
       2) If next label is on the left side, but no further than middle point between current tag right
@@ -6063,15 +6062,17 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getLeftRestraint_ = function(prev) {
-  return prev ?
-    Math.max(
-      prev.bounds.getRight(),
-      prev.label.enabled() ?
-        // Draw is needed to force update changed bounds.
-        prev.label.draw() && this.getTagLabelBounds_(prev.label).getRight() :
-        -Infinity
-    ) :
-    -Infinity;
+  if (prev) {
+    if (prev.label.enabled()) {
+      prev.label.draw();
+      var prevLabelRight = this.getTagLabelBounds_(prev.label).getRight();
+      return Math.max(prev.bounds.getRight(), prevLabelRight);
+    } else {
+      return prev.bounds.getRight();
+    }
+  }
+
+  return -Infinity;
 };
 
 
