@@ -5912,6 +5912,27 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement_ = function(item,
 
 
 /**
+ * Returns anchor point x value.
+ * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag.
+ * @returns {number} - X value of the anchor point.
+ */
+anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
+  var anchorPointX;
+  var curTagLabelPosition = tag.label.getFinalSettings('position').split('-')[0];
+  if (curTagLabelPosition === 'center') {
+    anchorPointX = tag.bounds.getLeft() + tag.bounds.width / 2;
+  }
+  if (curTagLabelPosition === 'right') {
+    anchorPointX = tag.bounds.getRight();
+  }
+  if (curTagLabelPosition === 'left') {
+    anchorPointX = tag.bounds.getLeft();
+  }
+  return anchorPointX;
+};
+
+
+/**
  * Sorting function for binary insert, used while collecting tags for label crop.
  * If anchor is left, sort by bounds left side.
  * If anchor is center, sort by bounds center.
@@ -5922,20 +5943,9 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement_ = function(item,
  * @private
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_ = function(tag1, tag2) {
-  var anchor = /** @type {string} */(tag1.label.getFinalSettings('anchor'));
-
-  // TODO: Probably sort by tag bounds?
-  // return (tag1.bounds.left - tag2.bounds.left) || -1;
-
-  if (goog.string.startsWith(anchor, 'left')) {
-    return (tag1.bounds.left - tag2.bounds.left) || (tag1.bounds.width - tag2.bounds.width) || -1;
-  } else if (goog.string.startsWith(anchor, 'center')) {
-    var tag1CenterX = tag1.bounds.left + tag1.bounds.width / 2;
-    var tag2CenterX = tag2.bounds.left + tag2.bounds.width / 2;
-    return (tag1CenterX - tag2CenterX) || (tag1.bounds.width - tag2.bounds.width) || -1;
-  } else {
-    return (tag1.bounds.getRight() - tag2.bounds.getRight()) || (tag1.bounds.width - tag2.bounds.width) || -1;
-  }
+  var tag1AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag1);
+  var tag2AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag2);
+  return (tag1AnchorX - tag2AnchorX) || -1;
 };
 
 
