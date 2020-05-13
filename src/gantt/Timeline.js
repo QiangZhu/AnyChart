@@ -831,6 +831,8 @@ anychart.ganttModule.TimeLine.prototype.createTag = function(item, element, boun
     labelPointSettings: element.getLabelPointSettings(item, opt_periodIndex)
   };
 
+  tag.row = this.getTagRow_(tag);
+
   if (goog.isDef(opt_periodIndex)) {
     tag.periodIndex = opt_periodIndex;
     var periods = item.get(anychart.enums.GanttDataFields.PERIODS);
@@ -5960,14 +5962,15 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_ = function(tag1, tag2) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
-  var depthOption = this.milestones().preview().getOption('depth');
+  var previewMilestones = this.milestones().preview();
+  var depthOption = previewMilestones.getOption('depth');
 
   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
       (depth <= depthOption);
 
   if (depthMatches) {
     if (anychart.ganttModule.BaseGrid.isProjectMilestone(item)) {
-      var tag = this.getTagByItemAndElement_(item, this.milestones().preview(), row);
+      var tag = previewMilestones.getTagByItemAndRow(item, row);
       var label = goog.isDefAndNotNull(tag) ? tag.label : void 0;
       if (goog.isDef(label) && label.enabled()) {
         goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_);
@@ -6236,6 +6239,7 @@ anychart.ganttModule.TimeLine.prototype.getTagsFromResourcePeriodRow_ = function
  * @returns {Array.<anychart.ganttModule.TimeLine.Tag>} - Sorted array of tags.
  */
 anychart.ganttModule.TimeLine.prototype.getTagsFromItemRow_ = function(item) {
+  debugger;
   if (anychart.ganttModule.BaseGrid.isPeriod(item)) {
     return this.getTagsFromResourcePeriodRow_(item);
   } else if (anychart.ganttModule.BaseGrid.isGroupingTask(item)) {

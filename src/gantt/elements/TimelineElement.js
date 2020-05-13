@@ -786,6 +786,41 @@ anychart.ganttModule.elements.TimelineElement.prototype.getHeight = function(dat
 };
 
 
+/**
+ * Calculates tag row by it's position.
+ * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag whose row should be calculated.
+ * @return {number} - Row.
+ */
+anychart.ganttModule.elements.TimelineElement.prototype.getTagRow = function(tag) {
+  var timeline = this.getTimeline();
+  var controller = timeline.controller;
+  var height = controller.verticalOffset() + tag.bounds.top - timeline.headerHeight();
+  return controller.getIndexByHeight(height);
+};
+
+
+/**
+ * Finds tag for given data item and row.
+ * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Data item.
+ * @param {anychart.ganttModule.elements.TimelineElement} element - Element whose tags data to use.
+ * @param {number} row - Row number.
+ * @return {?anychart.ganttModule.TimeLine.Tag} - Tag or null, if tag is not found.
+ */
+anychart.ganttModule.elements.TimelineElement.prototype.getTagByItemAndRow = function(item, row) {
+  var tagsData = this.shapeManager.getTagsData();
+
+  for (var tagKey in tagsData) {
+    if (tagsData.hasOwnProperty(tagKey)) {
+      var tag = tagsData[tagKey];
+      if (tag.item === item && this.getTagRow(tag) === row) {
+        return tag;
+      }
+    }
+  }
+  return null;
+};
+
+
 //endregion
 //region -- External API.
 /**
