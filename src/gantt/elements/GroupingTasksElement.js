@@ -103,6 +103,8 @@ anychart.ganttModule.elements.GroupingTasksElement.prototype.progressInvalidated
 };
 
 
+anychart.ganttModule.elements.GroupingTasksElement.prototype.getTagByItem
+
 //endregion
 //region -- Serialize/Deserialize.
 /** @inheritDoc */

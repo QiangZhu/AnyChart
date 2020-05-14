@@ -787,32 +787,22 @@ anychart.ganttModule.elements.TimelineElement.prototype.getHeight = function(dat
 
 
 /**
- * Calculates tag row by it's position.
- * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag whose row should be calculated.
- * @return {number} - Row.
- */
-anychart.ganttModule.elements.TimelineElement.prototype.getTagRow = function(tag) {
-  var timeline = this.getTimeline();
-  var controller = timeline.controller;
-  var height = controller.verticalOffset() + tag.bounds.top - timeline.headerHeight();
-  return controller.getIndexByHeight(height);
-};
-
-
-/**
  * Finds tag for given data item and row.
  * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Data item.
  * @param {anychart.ganttModule.elements.TimelineElement} element - Element whose tags data to use.
- * @param {number} row - Row number.
+ * @param {number|undefined} row - Row number, optional.
  * @return {?anychart.ganttModule.TimeLine.Tag} - Tag or null, if tag is not found.
  */
 anychart.ganttModule.elements.TimelineElement.prototype.getTagByItemAndRow = function(item, row) {
   var tagsData = this.shapeManager.getTagsData();
+  var isRowAbsent = row === void 0;
 
   for (var tagKey in tagsData) {
     if (tagsData.hasOwnProperty(tagKey)) {
       var tag = tagsData[tagKey];
-      if (tag.item === item && this.getTagRow(tag) === row) {
+      // Fallback for the case of row not being passed.
+      var rowMatches = isRowAbsent ? true : tag.row === row;
+      if (tag.item === item && rowMatches) {
         return tag;
       }
     }

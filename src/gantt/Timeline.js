@@ -828,10 +828,9 @@ anychart.ganttModule.TimeLine.prototype.createTag = function(item, element, boun
     item: item,
     labels: element.getLabelsResolutionOrder(),
     bounds: bounds,
-    labelPointSettings: element.getLabelPointSettings(item, opt_periodIndex)
+    labelPointSettings: element.getLabelPointSettings(item, opt_periodIndex),
+    row: this.getTagRow_(bounds)
   };
-
-  tag.row = this.getTagRow_(tag);
 
   if (goog.isDef(opt_periodIndex)) {
     tag.periodIndex = opt_periodIndex;
@@ -5904,7 +5903,7 @@ anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement_ = function(item,
   for (var tagKey in tagsData) {
     if (tagsData.hasOwnProperty(tagKey)) {
       var tag = tagsData[tagKey];
-      if (tag.item === item && this.getTagRow_(tag) === row) {
+      if (tag.item === item && tag.row === row) {
         return tag;
       }
     }
@@ -5989,12 +5988,13 @@ anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(dep
 
 /**
  * Calculates tag row by it's position.
- * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag whose row should be calculated.
+ * @param {anychart.ganttModule.TimeLine.Tag|anychart.math.Rect} tag - Tag whose row should be calculated or bounds of the tag.
  * @return {number} - Row.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tag) {
-  var height = this.controller.verticalOffset() + tag.bounds.top - this.headerHeight();
+anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagOrBounds) {
+  var bounds = goog.isDef(tagOrBounds.bounds) ? tagOrBounds.bounds : tagOrBounds;
+  var height = this.controller.verticalOffset() + bounds.top - this.headerHeight();
   return this.controller.getIndexByHeight(height);
 };
 
@@ -6190,7 +6190,7 @@ anychart.ganttModule.TimeLine.prototype.getTagsFromProjectGroupingTask_ = functi
   var tags = [];
 
   if (goog.isDef(itemTag)) {
-    var curRow = this.getTagRow_(itemTag);
+    var curRow = itemTag.row;
     this.getPreviewMilestonesTags_(0, tags, item, curRow);
   }
 
@@ -6239,7 +6239,6 @@ anychart.ganttModule.TimeLine.prototype.getTagsFromResourcePeriodRow_ = function
  * @returns {Array.<anychart.ganttModule.TimeLine.Tag>} - Sorted array of tags.
  */
 anychart.ganttModule.TimeLine.prototype.getTagsFromItemRow_ = function(item) {
-  debugger;
   if (anychart.ganttModule.BaseGrid.isPeriod(item)) {
     return this.getTagsFromResourcePeriodRow_(item);
   } else if (anychart.ganttModule.BaseGrid.isGroupingTask(item)) {
