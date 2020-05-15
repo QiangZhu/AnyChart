@@ -381,9 +381,9 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
   this.currentLowerTicksUnit_ = null;
 
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
-    ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['cropLabels', anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW],
     ['zoomOnMouseWheel', 0, 0],
+    ['columnStroke', anychart.ConsistencyState.APPEARANCE, anychart.Signal.NEEDS_REDRAW],
     ['workingFill', 0, 0, 0, function() {
       var fill = /** @type {acgraph.vector.Fill} */ (this.getOption('workingFill'));
       this.getWorkingPath_().fill(fill);
@@ -610,8 +610,9 @@ anychart.ganttModule.TimeLine.TICK_INTERVAL_GROWTH_MAP = (function() {
 
 
 //endregion
-//region -- Coloring.
+//region -- Descriptors.
 /**
+ * Coloring descriptors
  * @type {!Object.<string, anychart.core.settings.PropertyDescriptor>}
  */
 anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
@@ -627,6 +628,22 @@ anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
   return map;
 })();
 anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS);
+
+
+/**
+ * General descriptors.
+ * @type {!Object.<string, anychart.core.settings.PropertyDescriptor>}
+ */
+anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS = (function() {
+  /** @type {!Object.<string, anychart.core.settings.PropertyDescriptor>} */
+  var map = {};
+  anychart.core.settings.createDescriptors(map, [
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'zoomOnMouseWheel', anychart.core.settings.booleanNormalizer]
+  ]);
+  return map;
+})();
+anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS);
 
 
 //endregion
@@ -2835,22 +2852,6 @@ anychart.ganttModule.TimeLine.prototype.resolveAutoAnchorByType_ = function(posi
 
 
 //endregion
-/**
- * General descriptors.
- * @type {!Object.<string, anychart.core.settings.PropertyDescriptor>}
- */
-anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS = (function() {
-  /** @type {!Object.<string, anychart.core.settings.PropertyDescriptor>} */
-  var map = {};
-  anychart.core.settings.createDescriptors(map, [
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'zoomOnMouseWheel', anychart.core.settings.booleanNormalizer]
-  ]);
-  return map;
-})();
-anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS);
-
-
 /**
  * Draws thumb preview.
  * @param {goog.fx.DragEvent} event - Event.
@@ -5891,108 +5892,13 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
 
 
 /**
- * Finds tag for given data item and row.
- * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Data item.
- * @param {anychart.ganttModule.elements.TimelineElement} element - Element whose tags data to use.
- * @param {number} row - Row number.
- * @return {?anychart.ganttModule.TimeLine.Tag} - Tag or null, if tag is not found.
- * @private
- */
-anychart.ganttModule.TimeLine.prototype.getTagByItemAndElement_ = function(item, element, row) {
-  var tagsData = element.shapeManager.getTagsData();
-
-  for (var tagKey in tagsData) {
-    if (tagsData.hasOwnProperty(tagKey)) {
-      var tag = tagsData[tagKey];
-      if (tag.item === item && tag.row === row) {
-        return tag;
-      }
-    }
-  }
-  return null;
-};
-
-
-/**
- * Returns anchor point x value.
- * @param {anychart.ganttModule.TimeLine.Tag} tag - Tag.
- * @returns {number} - X value of the anchor point.
- */
-anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
-  var anchorPointX;
-  var curTagLabelPosition = tag.label.getFinalSettings('position').split('-')[0];
-  if (curTagLabelPosition === 'center') {
-    return anchorPointX = tag.bounds.getLeft() + tag.bounds.width / 2;
-  } else if (curTagLabelPosition === 'right') {
-    return anchorPointX = tag.bounds.getRight();
-  } else {
-    return anchorPointX = tag.bounds.getLeft();
-  }
-};
-
-
-/**
- * Sorting function for binary insert, used while collecting tags for label crop.
- * If anchor is left, sort by bounds left side.
- * If anchor is center, sort by bounds center.
- * If anchor is right, sort by right side.
- * @param {anychart.ganttModule.TimeLine.Tag} tag1
- * @param {anychart.ganttModule.TimeLine.Tag} tag2
- * @return {number}
- * @private
- */
-anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_ = function(tag1, tag2) {
-  var tag1AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag1);
-  var tag2AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag2);
-  return (tag1AnchorX - tag2AnchorX) || -1;
-};
-
-
-// /**
-//  * Populates tags array with preview milestone tag elements for given row.
-//  * Modifies tagsArr argument.
-//  * @param {number} depth - Current depth.
-//  * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArr - Sorted array of tags.
-//  * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
-//  *  preview milestones onto.
-//  * @param {number} row - Item row.
-//  * @private
-//  */
-// anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
-//   var previewMilestones = this.milestones().preview();
-//   var depthOption = previewMilestones.getOption('depth');
-
-//   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
-//       (depth <= depthOption);
-
-//   if (depthMatches) {
-//     if (anychart.ganttModule.BaseGrid.isProjectMilestone(item)) {
-//       var tag = previewMilestones.getTagByItemAndRow(item, row);
-//       var label = goog.isDefAndNotNull(tag) ? tag.label : void 0;
-//       if (goog.isDef(label) && label.enabled()) {
-//         goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_);
-//       }
-//     } else {
-//       for (var i = 0; i < item.numChildren(); i++) {
-//         var child = item.getChildAt(i);
-//         if (goog.isDef(child)) {
-//           this.getPreviewMilestonesTags_(depth + 1, tagsArr, child, row);
-//         }
-//       }
-//     }
-//   }
-// };
-
-
-/**
  * Calculates tag row by it's position.
- * @param {anychart.ganttModule.TimeLine.Tag|anychart.math.Rect} tagOrBounds - Tag whose row should be calculated or bounds of the tag.
+ * @param {anychart.math.Rect} tagBounds - Tag bounds.
  * @return {number} - Row.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagOrBounds) {
-  var bounds = goog.isDef(tagOrBounds.bounds) ? tagOrBounds.bounds : tagOrBounds;
-  var height = this.controller.verticalOffset() + bounds.top - this.headerHeight();
+anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagBounds) {
+  var height = this.controller.verticalOffset() + tagBounds.top - this.headerHeight();
   return this.controller.getIndexByHeight(height);
 };
 
@@ -6042,12 +5948,21 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
   var halfDeltaX = cur.bounds.getRight() + delta / 2;
 
   /*
-  //TODO: Illustration
+    //TODO: Recheck illustration
     As simple as that:
       1) If next label is righter than next tag itself, right restraint is left side of the next tag.
+        █Long lab█Label text
+         Long label text
+                  Label text
       2) If next label is on the left side, but no further than middle point between current tag right
         and next tag left, next label left side is a restraint.
+        █Long label text:Text█
+         Long label text
+                         Text
       3) If next label is on the left and crosses the middle point between tags, use middle point as a restraint.
+        █Long la:Long la█
+         Long label text
+                 Long label text
    */
 
   if (nextTagLabelBounds.getLeft() < next.bounds.getLeft() && delta > 0) {
