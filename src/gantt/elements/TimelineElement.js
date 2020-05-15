@@ -788,26 +788,74 @@ anychart.ganttModule.elements.TimelineElement.prototype.getHeight = function(dat
 
 /**
  * Finds tag for given data item and row.
- * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Data item.
- * @param {anychart.ganttModule.elements.TimelineElement} element - Element whose tags data to use.
- * @param {number|undefined} row - Row number, optional.
+ * @param {anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem} item - Data item.
+ * @param {number=} opt_row - Row number, optional.
  * @return {?anychart.ganttModule.TimeLine.Tag} - Tag or null, if tag is not found.
  */
-anychart.ganttModule.elements.TimelineElement.prototype.getTagByItemAndRow = function(item, row) {
+anychart.ganttModule.elements.TimelineElement.prototype.getTagByItemAndRow = function(item, opt_row) {
   var tagsData = this.shapeManager.getTagsData();
-  var isRowAbsent = row === void 0;
+  var isRowAbsent = !goog.isDef(opt_row);
 
   for (var tagKey in tagsData) {
     if (tagsData.hasOwnProperty(tagKey)) {
       var tag = tagsData[tagKey];
-      // Fallback for the case of row not being passed.
-      var rowMatches = isRowAbsent ? true : tag.row === row;
-      if (tag.item === item && rowMatches) {
+      if (tag.item === item && (isRowAbsent || tag.row === opt_row)) {
         return tag;
       }
     }
   }
   return null;
+};
+
+
+/**
+ * Returns anchor point x value.
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag - Tag.
+ * @returns {number} - X value of the anchor point.
+ */
+anychart.ganttModule.elements.TimelineElement.getTagAnchorPoint_ = function(tag) {
+  var curTagLabelPosition = tag.label.getFinalSettings('position').split('-')[0];
+  if (curTagLabelPosition === 'center') {
+    return tag.bounds.getLeft() + tag.bounds.width / 2;
+  } else if (curTagLabelPosition === 'right') {
+    return tag.bounds.getRight();
+  } else {
+    return tag.bounds.getLeft();
+  }
+};
+
+
+/**
+ * Sorting function for binary insert, used while collecting tags for label crop.
+ * If anchor is left, sort by bounds left side.
+ * If anchor is center, sort by bounds center.
+ * If anchor is right, sort by right side.
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag1
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag2
+ * @return {number}
+ */
+anychart.ganttModule.elements.TimelineElement.tagsBinaryInsertCallback = function(tag1, tag2) {
+  var tag1AnchorX = anychart.ganttModule.elements.TimelineElement.getTagAnchorPoint_(tag1);
+  var tag2AnchorX = anychart.ganttModule.elements.TimelineElement.getTagAnchorPoint_(tag2);
+  return (tag1AnchorX - tag2AnchorX) || -1;
+};
+
+
+/**
+ * Inserts tags in provided array, sorted.
+ * @param {anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem} item
+ * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArray
+ */
+anychart.ganttModule.elements.TimelineElement.prototype.getSortedTagsByItem = function(item, tagsArray) {
+  var tagsData = this.shapeManager.getTagsData();
+  for (var tagKey in tagsData) {
+    if (tagsData.hasOwnProperty(tagKey)) {
+      var tag = tagsData[tagKey];
+      if (tag.item === item) {
+        goog.array.binaryInsert(tagsArray, tag, anychart.ganttModule.elements.TimelineElement.tagsBinaryInsertCallback);
+      }
+    }
+  }
 };
 
 

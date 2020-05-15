@@ -444,7 +444,8 @@ anychart.ganttModule.TimeLine.prototype.SUPPORTED_CONSISTENCY_STATES =
  *   periodIndex: number,
  *   period: Object,
  *   label: anychart.core.ui.LabelsFactory.Label,
- *   labelPointSettings: Object
+ *   labelPointSettings: Object,
+ *   row: number
  * }}
  */
 anychart.ganttModule.TimeLine.Tag;
@@ -5921,15 +5922,12 @@ anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
   var anchorPointX;
   var curTagLabelPosition = tag.label.getFinalSettings('position').split('-')[0];
   if (curTagLabelPosition === 'center') {
-    anchorPointX = tag.bounds.getLeft() + tag.bounds.width / 2;
+    return anchorPointX = tag.bounds.getLeft() + tag.bounds.width / 2;
+  } else if (curTagLabelPosition === 'right') {
+    return anchorPointX = tag.bounds.getRight();
+  } else {
+    return anchorPointX = tag.bounds.getLeft();
   }
-  if (curTagLabelPosition === 'right') {
-    anchorPointX = tag.bounds.getRight();
-  }
-  if (curTagLabelPosition === 'left') {
-    anchorPointX = tag.bounds.getLeft();
-  }
-  return anchorPointX;
 };
 
 
@@ -5938,8 +5936,8 @@ anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
  * If anchor is left, sort by bounds left side.
  * If anchor is center, sort by bounds center.
  * If anchor is right, sort by right side.
- * @param {?anychart.ganttModule.TimeLine.Tag} tag1
- * @param {?anychart.ganttModule.TimeLine.Tag} tag2
+ * @param {anychart.ganttModule.TimeLine.Tag} tag1
+ * @param {anychart.ganttModule.TimeLine.Tag} tag2
  * @return {number}
  * @private
  */
@@ -5950,45 +5948,45 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_ = function(tag1, tag2) {
 };
 
 
-/**
- * Populates tags array with preview milestone tag elements for given row.
- * Modifies tagsArr argument.
- * @param {number} depth - Current depth.
- * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArr - Sorted array of tags.
- * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
- *  preview milestones onto.
- * @param {number} row - Item row.
- * @private
- */
-anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
-  var previewMilestones = this.milestones().preview();
-  var depthOption = previewMilestones.getOption('depth');
+// /**
+//  * Populates tags array with preview milestone tag elements for given row.
+//  * Modifies tagsArr argument.
+//  * @param {number} depth - Current depth.
+//  * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArr - Sorted array of tags.
+//  * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
+//  *  preview milestones onto.
+//  * @param {number} row - Item row.
+//  * @private
+//  */
+// anychart.ganttModule.TimeLine.prototype.getPreviewMilestonesTags_ = function(depth, tagsArr, item, row) {
+//   var previewMilestones = this.milestones().preview();
+//   var depthOption = previewMilestones.getOption('depth');
 
-  var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
-      (depth <= depthOption);
+//   var depthMatches = !goog.isDefAndNotNull(depthOption) || //null or undefined value will display ALL submilestones of parent.
+//       (depth <= depthOption);
 
-  if (depthMatches) {
-    if (anychart.ganttModule.BaseGrid.isProjectMilestone(item)) {
-      var tag = previewMilestones.getTagByItemAndRow(item, row);
-      var label = goog.isDefAndNotNull(tag) ? tag.label : void 0;
-      if (goog.isDef(label) && label.enabled()) {
-        goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_);
-      }
-    } else {
-      for (var i = 0; i < item.numChildren(); i++) {
-        var child = item.getChildAt(i);
-        if (goog.isDef(child)) {
-          this.getPreviewMilestonesTags_(depth + 1, tagsArr, child, row);
-        }
-      }
-    }
-  }
-};
+//   if (depthMatches) {
+//     if (anychart.ganttModule.BaseGrid.isProjectMilestone(item)) {
+//       var tag = previewMilestones.getTagByItemAndRow(item, row);
+//       var label = goog.isDefAndNotNull(tag) ? tag.label : void 0;
+//       if (goog.isDef(label) && label.enabled()) {
+//         goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_);
+//       }
+//     } else {
+//       for (var i = 0; i < item.numChildren(); i++) {
+//         var child = item.getChildAt(i);
+//         if (goog.isDef(child)) {
+//           this.getPreviewMilestonesTags_(depth + 1, tagsArr, child, row);
+//         }
+//       }
+//     }
+//   }
+// };
 
 
 /**
  * Calculates tag row by it's position.
- * @param {anychart.ganttModule.TimeLine.Tag|anychart.math.Rect} tag - Tag whose row should be calculated or bounds of the tag.
+ * @param {anychart.ganttModule.TimeLine.Tag|anychart.math.Rect} tagOrBounds - Tag whose row should be calculated or bounds of the tag.
  * @return {number} - Row.
  * @private
  */
@@ -6173,28 +6171,13 @@ anychart.ganttModule.TimeLine.prototype.cropTagsLabels_ = function(tags) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getTagsFromProjectGroupingTask_ = function(item) {
-  var tagsData = this.groupingTasks().shapeManager.getTagsData();
+  var itemTag = this.groupingTasks().getTagByItemAndRow(item);
 
-  var itemTag;
-
-  for (var tagKey in tagsData) {
-    if (tagsData.hasOwnProperty(tagKey)) {
-      var tag = tagsData[tagKey];
-      if (tag.item === item) {
-        itemTag = tag;
-        break;
-      }
-    }
+  if (goog.isDefAndNotNull(itemTag)) {
+    return this.milestones().preview().getSortedTagsByItemAndRow(item, itemTag.row);
   }
 
-  var tags = [];
-
-  if (goog.isDef(itemTag)) {
-    var curRow = itemTag.row;
-    this.getPreviewMilestonesTags_(0, tags, item, curRow);
-  }
-
-  return tags;
+  return [];
 };
 
 
@@ -6205,31 +6188,12 @@ anychart.ganttModule.TimeLine.prototype.getTagsFromProjectGroupingTask_ = functi
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getTagsFromResourcePeriodRow_ = function(item) {
-  var periodsTagsData = this.periods().shapeManager.getTagsData();
-  var milestonesTagsData = this.milestones().shapeManager.getTagsData();
+  var tags = [];
 
-  var periodsTags = [];
-  var tagKey, tag;
+  this.periods().getSortedTagsByItem(item, tags);
+  this.milestones().getSortedTagsByItem(item, tags);
 
-  for (tagKey in periodsTagsData) {
-    if (periodsTagsData.hasOwnProperty(tagKey)) {
-      tag = periodsTagsData[tagKey];
-      if (tag.item === item) {
-        goog.array.binaryInsert(periodsTags, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_);
-      }
-    }
-  }
-
-  for (tagKey in milestonesTagsData) {
-    if (milestonesTagsData.hasOwnProperty(tagKey)) {
-      tag = milestonesTagsData[tagKey];
-      if (tag.item === item) {
-        goog.array.binaryInsert(periodsTags, tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback_);
-      }
-    }
-  }
-
-  return periodsTags;
+  return tags;
 };
 
 
