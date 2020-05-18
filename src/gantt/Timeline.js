@@ -380,6 +380,12 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    */
   this.currentLowerTicksUnit_ = null;
 
+  /**
+   * Indexes of this array represent gantt chart rows and contain
+   * array of sorted tags
+   * @type {Array.<Array.<anychart.ganttModule.TimeLine.Tag>>}
+   * @private
+   */
   this.tagsForCropLabels_ = [];
 
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
