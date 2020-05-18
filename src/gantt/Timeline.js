@@ -5894,23 +5894,6 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
 
 
 /**
- * Returns anchor point x value.
- * @param {?anychart.ganttModule.TimeLine.Tag} tag - Tag.
- * @returns {number} - X value of the anchor point.
- */
-anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
-  var curTagLabelPosition = tag.label.getFinalSettings('position').split('-')[0];
-  if (curTagLabelPosition === 'center') {
-    return tag.bounds.getLeft() + tag.bounds.width / 2;
-  } else if (curTagLabelPosition === 'right') {
-    return tag.bounds.getRight();
-  } else {
-    return tag.bounds.getLeft();
-  }
-};
-
-
-/**
  * Sorting function for binary insert, used while collecting tags for label crop.
  * If anchor is left, sort by bounds left side.
  * If anchor is center, sort by bounds center.
@@ -6053,17 +6036,8 @@ anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cu
   var curTagLabelAnchor = cur.label.getFinalSettings('anchor').split('-')[0];
   if (curTagLabelAnchor === 'center') {
     var curTagLabelPosition = cur.label.getFinalSettings('position').split('-')[0];
-    var anchorPointX;
-    if (curTagLabelPosition === 'center') {
-      anchorPointX = cur.bounds.getLeft() + cur.bounds.width / 2;
-    }
-    if (curTagLabelPosition === 'right') {
-      anchorPointX = cur.bounds.getRight();
-    }
-    if (curTagLabelPosition === 'left') {
-      anchorPointX = cur.bounds.getLeft();
-    }
-    newWidth = Math.min(anchorPointX - labelFinalLeft, labelFinalRight - anchorPointX) * 2;
+    var anchorPoint = anychart.utils.getCoordinateByAnchor(cur.bounds, curTagLabelPosition);
+    newWidth = Math.min(anchorPoint.x - labelFinalLeft, labelFinalRight - anchorPoint.x) * 2;
   }
 
   if (newWidth >= 20 && newWidth < curTagLabelBounds.width) {
