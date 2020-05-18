@@ -380,7 +380,7 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    */
   this.currentLowerTicksUnit_ = null;
 
-  this.currentTagsByRows = [];
+  this.tagsForCropLabels_ = [];
 
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['cropLabels', anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW],
@@ -5938,7 +5938,7 @@ anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
       They contain tag bounds and instance of label being drawn. And also when we collect
       tags we only get what is drawn on the screen.
      */
-    var tags = this.currentTagsByRows[i] || [];
+    var tags = this.tagsForCropLabels_[i] || [];
     this.cropTagsLabels_(tags);
   }
 };
@@ -6032,7 +6032,6 @@ anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cu
 
   var newWidth = labelFinalRight - labelFinalLeft;
 
-  //TODO: Check if finalSettings are needed (they most probably are)
   var curTagLabelAnchor = cur.label.getFinalSettings('anchor').split('-')[0];
   if (curTagLabelAnchor === 'center') {
     var curTagLabelPosition = cur.label.getFinalSettings('position').split('-')[0];
@@ -6085,13 +6084,30 @@ anychart.ganttModule.TimeLine.prototype.cropTagsLabels_ = function(tags) {
 
 
 /**
+ * 
+ * @param {anychart.ganttModule.TimeLine.Tag} tag
+ */
+anychart.ganttModule.TimeLine.prototype.insertTagForCropLabels_ = function(tag) {
+  if (!goog.isArray(this.tagsForCropLabels_[tag.row])) {
+    this.tagsForCropLabels_[tag.row] = [];
+  }
+  var isResourcePeriodOrMilestone = (tag.type === anychart.enums.TLElementTypes.PERIODS) || (tag.type === anychart.enums.TLElementTypes.MILESTONES);
+  var isProjectMilestonePreview = tag.type === anychart.enums.TLElementTypes.MILESTONES_PREVIEW;
+  var isResource = this.controller.isResources();
+  if ((isResource && isResourcePeriodOrMilestone) || (!isResource && isProjectMilestonePreview)) {
+    goog.array.binaryInsert(this.tagsForCropLabels_[tag.row], tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback);
+  }
+};
+
+
+/**
  * Draws labels.
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.drawLabels_ = function() {
   this.labels().suspendSignalsDispatching();
   this.labels().clear();
-  this.currentTagsByRows = [];
+  this.tagsForCropLabels_ = [];
 
   var isCropLabelsEnabled = this.getOption('cropLabels');
 
@@ -6183,15 +6199,7 @@ anychart.ganttModule.TimeLine.prototype.drawLabels_ = function() {
             tag.label.draw();
 
             if (isCropLabelsEnabled) {
-              if (!goog.isArray(this.currentTagsByRows[tag.row])) {
-                this.currentTagsByRows[tag.row] = [];
-              }
-              var isResourcePeriodOrMilestone = (tag.type === anychart.enums.TLElementTypes.PERIODS) || (tag.type === anychart.enums.TLElementTypes.MILESTONES);
-              var isProjectMilestonePreview = tag.type === anychart.enums.TLElementTypes.MILESTONES_PREVIEW;
-              var isResource = this.controller.isResources();
-              if ((isResource && isResourcePeriodOrMilestone) || (!isResource && isProjectMilestonePreview)) {
-                goog.array.binaryInsert(this.currentTagsByRows[tag.row], tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback);
-              }
+              this.insertTagForCropLabels_(tag);
             }
           }
         }
