@@ -381,8 +381,8 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
   this.currentLowerTicksUnit_ = null;
 
   /**
-   * Indexes of this array represent gantt chart rows and contain
-   * array of sorted tags
+   * Indexes of this array represent gantt chart rows
+   * and each contains array of sorted tags.
    * @type {Array.<Array.<anychart.ganttModule.TimeLine.Tag>>}
    * @private
    */
@@ -5909,8 +5909,16 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
  * @return {number}
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
-  var tag1Anchor = anychart.utils.getCoordinateByAnchor(tag1.bounds, tag1.label.getFinalSettings('position'));
-  var tag2Anchor = anychart.utils.getCoordinateByAnchor(tag2.bounds, tag2.label.getFinalSettings('position'));
+  var tag1Anchor = anychart.utils.getCoordinateByAnchor(
+    tag1.bounds,
+    /** @type {string} */(tag1.label.getFinalSettings('position'))
+  );
+
+  var tag2Anchor = anychart.utils.getCoordinateByAnchor(
+    tag2.bounds,
+    /** @type {string} */(tag2.label.getFinalSettings('position'))
+  );
+
   return (tag1Anchor.x - tag2Anchor.x) || -1;
 };
 
@@ -5923,7 +5931,11 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
  */
 anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagBounds) {
   var height = this.controller.verticalOffset() + tagBounds.top - this.headerHeight() - this.pixelBoundsCache.top;
-  return this.controller.getIndexByHeight(height) + this.controller.startIndex();
+
+  var startIndex = this.controller.startIndex();
+  var startRowTop = this.controller.getHeightCache()[startIndex - 1] || 0;
+
+  return this.controller.getIndexByHeight(startRowTop + height);
 };
 
 
@@ -5968,21 +5980,16 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
   var halfDeltaX = cur.bounds.getRight() + delta / 2;
 
   /*
-    //TODO: Recheck illustration
+    ● - next tag
+    █ - current tag
     As simple as that:
       1) If next label is righter than next tag itself, right restraint is left side of the next tag.
-        █Long lab█Label text
-         Long label text
-                  Label text
+        █Long lab●Long label text
       2) If next label is on the left side, but no further than middle point between current tag right
         and next tag left, next label left side is a restraint.
-        █Long label text:Text█
-         Long label text
-                         Text
+        █Long label text:Long●
       3) If next label is on the left and crosses the middle point between tags, use middle point as a restraint.
-        █Long la:Long la█
-         Long label text
-                 Long label text
+        █Long la:Long la●
    */
 
   if (nextTagLabelBounds.getLeft() < next.bounds.getLeft() && delta > 0) {
