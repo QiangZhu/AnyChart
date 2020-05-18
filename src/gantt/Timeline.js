@@ -4118,7 +4118,6 @@ anychart.ganttModule.TimeLine.prototype.genElement_ = function() {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.drawTimelineElements_ = function() {
-  this.currentTagsByRows.length = 0;
   var els = this.initializeElements_();
 
   for (var j = 0; j < els.length; j++) {
@@ -5895,6 +5894,40 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
 
 
 /**
+ * Returns anchor point x value.
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag - Tag.
+ * @returns {number} - X value of the anchor point.
+ */
+anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
+  var curTagLabelPosition = tag.label.getFinalSettings('position').split('-')[0];
+  if (curTagLabelPosition === 'center') {
+    return tag.bounds.getLeft() + tag.bounds.width / 2;
+  } else if (curTagLabelPosition === 'right') {
+    return tag.bounds.getRight();
+  } else {
+    return tag.bounds.getLeft();
+  }
+};
+
+
+/**
+ * Sorting function for binary insert, used while collecting tags for label crop.
+ * If anchor is left, sort by bounds left side.
+ * If anchor is center, sort by bounds center.
+ * If anchor is right, sort by right side.
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag1
+ * @param {?anychart.ganttModule.TimeLine.Tag} tag2
+ * @return {number}
+ */
+anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
+  // use anychart.utils.getAnchorPoint (or something like this)
+  var tag1AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag1);
+  var tag2AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag2);
+  return (tag1AnchorX - tag2AnchorX) || -1;
+};
+
+
+/**
  * Calculates tag row by it's position.
  * @param {anychart.math.Rect} tagBounds - Tag bounds.
  * @return {number} - Row.
@@ -5913,21 +5946,17 @@ anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagBounds) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
-  var visibleItems = this.getVisibleItems();
-
   // Get indexes of items currently displayed on timeline.
   var startIndex = /** @type {number} */(this.controller.startIndex());
   var endIndex = /** @type {number} */(this.controller.endIndex());
 
   for (var i = startIndex; i <= endIndex; i++) {
-    // var item = visibleItems[i];
-
     /*
       Tags are used, because they have all the information needed to crop labels.
       They contain tag bounds and instance of label being drawn. And also when we collect
       tags we only get what is drawn on the screen.
      */
-    var tags = this.currentTagsByRows[i] || [];// this.getTagsFromItemRow_(item);
+    var tags = this.currentTagsByRows[i] || [];
     this.cropTagsLabels_(tags);
   }
 };
@@ -6083,54 +6112,6 @@ anychart.ganttModule.TimeLine.prototype.cropTagsLabels_ = function(tags) {
 
 
 /**
- * Returns sorted array of milestones preview tags.
- * @param {anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem} item
- * @returns {Array.<anychart.ganttModule.TimeLine.Tag>} - Sorted array of tags.
- * @private
- */
-anychart.ganttModule.TimeLine.prototype.getTagsFromProjectGroupingTask_ = function(item) {
-  var itemTag = this.groupingTasks().getTagByItemAndRow(item);
-
-  if (goog.isDefAndNotNull(itemTag)) {
-    return this.milestones().preview().getSortedTagsByItemAndRow(item, itemTag.row);
-  }
-
-  return [];
-};
-
-
-/**
- * Returns sorted array of tags, belonging to the row with given item.
- * @param {anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem} item - Data item.
- * @returns {Array.<anychart.ganttModule.TimeLine.Tag>} - Sorted array of tags.
- * @private
- */
-anychart.ganttModule.TimeLine.prototype.getTagsFromResourcePeriodRow_ = function(item) {
-  var tags = [];
-
-  this.periods().getSortedTagsByItem(item, tags);
-  this.milestones().getSortedTagsByItem(item, tags);
-
-  return tags;
-};
-
-
-/**
- * Returns sorted array of tags for given data item.
- * @param {anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem} item - Data item.
- * @returns {Array.<anychart.ganttModule.TimeLine.Tag>} - Sorted array of tags.
- */
-anychart.ganttModule.TimeLine.prototype.getTagsFromItemRow_ = function(item) {
-  if (anychart.ganttModule.BaseGrid.isPeriod(item)) {
-    return this.getTagsFromResourcePeriodRow_(item);
-  } else if (anychart.ganttModule.BaseGrid.isGroupingTask(item)) {
-    return this.getTagsFromProjectGroupingTask_(item);
-  }
-  return [];
-};
-
-
-/**
  * Draws labels.
  * @private
  */
@@ -6236,7 +6217,7 @@ anychart.ganttModule.TimeLine.prototype.drawLabels_ = function() {
               var isProjectMilestonePreview = tag.type === anychart.enums.TLElementTypes.MILESTONES_PREVIEW;
               var isResource = this.controller.isResources();
               if ((isResource && isResourcePeriodOrMilestone) || (!isResource && isProjectMilestonePreview)) {
-                goog.array.binaryInsert(this.currentTagsByRows[tag.row], tag, anychart.ganttModule.elements.TimelineElement.tagsBinaryInsertCallback);
+                goog.array.binaryInsert(this.currentTagsByRows[tag.row], tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback);
               }
             }
           }

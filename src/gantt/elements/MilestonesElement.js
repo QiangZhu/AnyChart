@@ -206,55 +206,6 @@ anychart.ganttModule.elements.MilestonesElement.Preview.prototype.getPointSettin
 
 
 //endregion
-//region -- Internal API.
-/**
- * 
- * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
- *  preview milestones onto.
- * @param {number} row - Item row.
- * @returns {Array.<anychart.ganttModule.TimeLine.Tag>}
- */
-anychart.ganttModule.elements.MilestonesElement.Preview.prototype.getSortedTagsByItemAndRow = function(item, row) {
-  var depth = /** @type {number} */(this.getOption('depth'));
-  var tagsArr = [];
-  this.getSortedTags_(depth, tagsArr, item, row);
-  return tagsArr;
-};
-
-
-/**
- * Populates tags array with preview milestone tag elements for given row.
- * Modifies tagsArr argument.
- * @param {number} depth - Current depth.
- * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tagsArr - Sorted array of tags.
- * @param {(anychart.treeDataModule.Tree.DataItem|anychart.treeDataModule.View.DataItem)} item - Item to search
- *  preview milestones onto.
- * @param {number} row - Item row.
- * @private
- */
-anychart.ganttModule.elements.MilestonesElement.Preview.prototype.getSortedTags_ = function(depth, tagsArr, item, row) {
-  var depthMatches = !goog.isDefAndNotNull(depth) || //null or undefined value will display ALL submilestones of parent.
-      (depth <= depth);
-
-  if (depthMatches) {
-    if (anychart.ganttModule.BaseGrid.isProjectMilestone(item)) {
-      var tag = this.getTagByItemAndRow(item, row);
-      var label = goog.isDefAndNotNull(tag) ? tag.label : void 0;
-      if (goog.isDef(label) && label.enabled()) {
-        goog.array.binaryInsert(tagsArr, tag, anychart.ganttModule.elements.TimelineElement.tagsBinaryInsertCallback);
-      }
-    } else {
-      for (var i = 0; i < item.numChildren(); i++) {
-        var child = item.getChildAt(i);
-        if (goog.isDef(child)) {
-          this.getSortedTags_(depth + 1, tagsArr, child, row);
-        }
-      }
-    }
-  }
-};
-
-//endregion
 //region -- Serialization/Deserialization.
 /**
  * @inheritDoc
