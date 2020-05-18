@@ -380,6 +380,8 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
    */
   this.currentLowerTicksUnit_ = null;
 
+  this.currentTagsByRows = [];
+
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['cropLabels', anychart.ConsistencyState.TIMELINE_ELEMENTS_LABELS, anychart.Signal.NEEDS_REDRAW],
     ['zoomOnMouseWheel', 0, 0],
@@ -4116,6 +4118,7 @@ anychart.ganttModule.TimeLine.prototype.genElement_ = function() {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.drawTimelineElements_ = function() {
+  this.currentTagsByRows.length = 0;
   var els = this.initializeElements_();
 
   for (var j = 0; j < els.length; j++) {
@@ -5898,8 +5901,8 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagBounds) {
-  var height = this.controller.verticalOffset() + tagBounds.top - this.headerHeight();
-  return this.controller.getIndexByHeight(height);
+  var height = this.controller.verticalOffset() + tagBounds.top - this.headerHeight() - this.pixelBoundsCache.top;
+  return this.controller.getIndexByHeight(height) + this.controller.startIndex();
 };
 
 
@@ -5917,14 +5920,14 @@ anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
   var endIndex = /** @type {number} */(this.controller.endIndex());
 
   for (var i = startIndex; i <= endIndex; i++) {
-    var item = visibleItems[i];
+    // var item = visibleItems[i];
 
     /*
       Tags are used, because they have all the information needed to crop labels.
       They contain tag bounds and instance of label being drawn. And also when we collect
       tags we only get what is drawn on the screen.
      */
-    var tags = this.getTagsFromItemRow_(item);
+    var tags = this.currentTagsByRows[i] || [];// this.getTagsFromItemRow_(item);
     this.cropTagsLabels_(tags);
   }
 };
@@ -6134,6 +6137,9 @@ anychart.ganttModule.TimeLine.prototype.getTagsFromItemRow_ = function(item) {
 anychart.ganttModule.TimeLine.prototype.drawLabels_ = function() {
   this.labels().suspendSignalsDispatching();
   this.labels().clear();
+  this.currentTagsByRows = [];
+
+  var isCropLabelsEnabled = this.getOption('cropLabels');
 
   var els = this.initializeElements_();
 
@@ -6221,13 +6227,25 @@ anychart.ganttModule.TimeLine.prototype.drawLabels_ = function() {
               tag.label.enabled(false);
             }
             tag.label.draw();
+
+            if (isCropLabelsEnabled) {
+              if (!goog.isArray(this.currentTagsByRows[tag.row])) {
+                this.currentTagsByRows[tag.row] = [];
+              }
+              var isResourcePeriodOrMilestone = (tag.type === anychart.enums.TLElementTypes.PERIODS) || (tag.type === anychart.enums.TLElementTypes.MILESTONES);
+              var isProjectMilestonePreview = tag.type === anychart.enums.TLElementTypes.MILESTONES_PREVIEW;
+              var isResource = this.controller.isResources();
+              if ((isResource && isResourcePeriodOrMilestone) || (!isResource && isProjectMilestonePreview)) {
+                goog.array.binaryInsert(this.currentTagsByRows[tag.row], tag, anychart.ganttModule.elements.TimelineElement.tagsBinaryInsertCallback);
+              }
+            }
           }
         }
       }
     }
   }
 
-  if (this.getOption('cropLabels')) {
+  if (isCropLabelsEnabled) {
     this.cropElementsLabels_();
   }
 
