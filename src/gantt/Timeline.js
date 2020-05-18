@@ -5920,10 +5920,9 @@ anychart.ganttModule.TimeLine.getTagAnchorPoint_ = function(tag) {
  * @return {number}
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
-  // use anychart.utils.getAnchorPoint (or something like this)
-  var tag1AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag1);
-  var tag2AnchorX = anychart.ganttModule.TimeLine.getTagAnchorPoint_(tag2);
-  return (tag1AnchorX - tag2AnchorX) || -1;
+  var tag1Anchor = anychart.utils.getCoordinateByAnchor(tag1.bounds, tag1.label.getFinalSettings('position'));
+  var tag2Anchor = anychart.utils.getCoordinateByAnchor(tag2.bounds, tag2.label.getFinalSettings('position'));
+  return (tag1Anchor.x - tag2Anchor.x) || -1;
 };
 
 
