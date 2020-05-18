@@ -383,6 +383,7 @@ anychart.ganttModule.TimeLine = function(opt_controller, opt_isResources) {
   /**
    * Indexes of this array represent gantt chart rows
    * and each contains array of sorted tags.
+   *
    * @type {Array.<Array.<anychart.ganttModule.TimeLine.Tag>>}
    * @private
    */
@@ -855,7 +856,7 @@ anychart.ganttModule.TimeLine.prototype.createTag = function(item, element, boun
     labels: element.getLabelsResolutionOrder(),
     bounds: bounds,
     labelPointSettings: element.getLabelPointSettings(item, opt_periodIndex),
-    row: this.getTagRow_(bounds)
+    row: this.getTagRowNumber_(bounds)
   };
 
   if (goog.isDef(opt_periodIndex)) {
@@ -5904,6 +5905,7 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
  * If anchor is left, sort by bounds left side.
  * If anchor is center, sort by bounds center.
  * If anchor is right, sort by right side.
+ *
  * @param {?anychart.ganttModule.TimeLine.Tag} tag1
  * @param {?anychart.ganttModule.TimeLine.Tag} tag2
  * @return {number}
@@ -5924,12 +5926,13 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
 
 
 /**
- * Calculates tag row by it's position.
+ * Calculates tag row number by it's position.
+ *
  * @param {anychart.math.Rect} tagBounds - Tag bounds.
  * @return {number} - Row.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagBounds) {
+anychart.ganttModule.TimeLine.prototype.getTagRowNumber_ = function(tagBounds) {
   var height = this.controller.verticalOffset() + tagBounds.top - this.headerHeight() - this.pixelBoundsCache.top;
 
   var startIndex = this.controller.startIndex();
@@ -5943,6 +5946,7 @@ anychart.ganttModule.TimeLine.prototype.getTagRow_ = function(tagBounds) {
  * Checks if elements labels intersect on the row and crops them if they do.
  * Only checks intersection of milestone previews on project and milestones + periods on
  * resource chart.
+ *
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
@@ -5964,6 +5968,7 @@ anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
 
 /**
  * Returns rightmost available x value for current tag label.
+ *
  * @param {anychart.ganttModule.TimeLine.Tag} cur - Current tag.
  * @param {anychart.ganttModule.TimeLine.Tag?} next - Next tag.
  * @returns {number} - Right restraint for current tag label.
@@ -6008,6 +6013,7 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
  * Returns left restraint for current label, based on previous tag and label.
  * It is rightmost x value of previous tag, which is either label right boundary,
  * or tag itself right boundary if label is disabled.
+ *
  * @param {anychart.ganttModule.TimeLine.Tag?} prev - Previous tag.
  * @returns {number} - Left restraint for current label.
  * @private
@@ -6029,6 +6035,7 @@ anychart.ganttModule.TimeLine.prototype.getLeftRestraint_ = function(prev) {
 
 /**
  * Crops current tag label, taking previous and next tags and their labels into account.
+ *
  * @param {anychart.ganttModule.TimeLine.Tag?} prev - Previous tag.
  * @param {anychart.ganttModule.TimeLine.Tag?} cur - Current tag.
  * @param {anychart.ganttModule.TimeLine.Tag?} next - Next tag.
@@ -6063,6 +6070,7 @@ anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cu
 
 /**
  * Returns tag label with widened bounds if needed.
+ *
  * @param {anychart.core.ui.LabelsFactory.Label} label
  * @returns {anychart.math.Rect}
  * @private
@@ -6082,6 +6090,7 @@ anychart.ganttModule.TimeLine.prototype.getTagLabelBounds_ = function(label) {
 
 /**
  * Iterates over sorted array of tags and crops their labels.
+ *
  * @param {Array.<anychart.ganttModule.TimeLine.Tag>} tags - Sorted array of tags.
  * @private
  */
@@ -6097,7 +6106,8 @@ anychart.ganttModule.TimeLine.prototype.cropTagsLabels_ = function(tags) {
 
 
 /**
- * 
+ * Inserts tag using binary insert, to have sorted array.
+ *
  * @param {anychart.ganttModule.TimeLine.Tag} tag
  */
 anychart.ganttModule.TimeLine.prototype.insertTagForCropLabels_ = function(tag) {
