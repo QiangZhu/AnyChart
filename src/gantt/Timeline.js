@@ -843,7 +843,7 @@ anychart.ganttModule.TimeLine.prototype.createTag = function(item, element, boun
     labels: element.getLabelsResolutionOrder(),
     bounds: bounds,
     labelPointSettings: element.getLabelPointSettings(item, opt_periodIndex),
-    row: this.getTagRowNumber_(bounds)
+    row: this.getElementRowNumber_(bounds)
   };
 
   if (goog.isDef(opt_periodIndex)) {
@@ -5909,14 +5909,14 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
 
 
 /**
- * Calculates tag row number by it's position.
+ * Calculates element row number by it's position.
  *
- * @param {anychart.math.Rect} tagBounds - Tag bounds.
+ * @param {anychart.math.Rect} elementBounds - Element bounds.
  * @return {number} - Row.
  * @private
  */
-anychart.ganttModule.TimeLine.prototype.getTagRowNumber_ = function(tagBounds) {
-  var height = this.controller.verticalOffset() + tagBounds.top - this.headerHeight() - this.pixelBoundsCache.top;
+anychart.ganttModule.TimeLine.prototype.getElementRowNumber_ = function(elementBounds) {
+  var height = this.controller.verticalOffset() + elementBounds.top - this.headerHeight() - this.pixelBoundsCache.top;
 
   var startIndex = this.controller.startIndex();
   var startRowTop = this.controller.getHeightCache()[startIndex - 1] || 0;
