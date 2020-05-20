@@ -6046,7 +6046,7 @@ anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cu
     newWidth = Math.min(anchorPoint.x - labelFinalLeft, labelFinalRight - anchorPoint.x) * 2;
   }
 
-  // Minimum allowed width, currently is not configurable.
+  // Minimum allowed width for labels, currently is not configurable.
   var minimumAllowedWidth = 20;
 
   if (newWidth >= minimumAllowedWidth && newWidth < curTagLabelBounds.width) {
