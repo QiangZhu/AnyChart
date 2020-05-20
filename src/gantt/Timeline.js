@@ -621,13 +621,16 @@ anychart.ganttModule.TimeLine.TICK_INTERVAL_GROWTH_MAP = (function() {
 //endregion
 //region -- Descriptors.
 /**
- * Coloring descriptors
+ * Timeline descriptors.
+ *
  * @type {!Object.<string, anychart.core.settings.PropertyDescriptor>}
  */
-anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
+anychart.ganttModule.TimeLine.DESCRIPTORS = (function() {
   /** @type {!Object.<string, anychart.core.settings.PropertyDescriptor>} */
   var map = {};
   anychart.core.settings.createDescriptors(map, [
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'zoomOnMouseWheel', anychart.core.settings.booleanNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'columnStroke', anychart.core.settings.strokeNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'workingFill', anychart.core.settings.fillNormalizer],
     [anychart.enums.PropertyHandlerType.MULTI_ARG, 'notWorkingFill', anychart.core.settings.fillNormalizer],
@@ -636,23 +639,7 @@ anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS = (function() {
   ]);
   return map;
 })();
-anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS);
-
-
-/**
- * General descriptors.
- * @type {!Object.<string, anychart.core.settings.PropertyDescriptor>}
- */
-anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS = (function() {
-  /** @type {!Object.<string, anychart.core.settings.PropertyDescriptor>} */
-  var map = {};
-  anychart.core.settings.createDescriptors(map, [
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'cropLabels', anychart.core.settings.booleanNormalizer],
-    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'zoomOnMouseWheel', anychart.core.settings.booleanNormalizer]
-  ]);
-  return map;
-})();
-anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.GENERAL_DESCRIPTORS);
+anychart.core.settings.populate(anychart.ganttModule.TimeLine, anychart.ganttModule.TimeLine.DESCRIPTORS);
 
 
 //endregion
@@ -5911,15 +5898,11 @@ anychart.ganttModule.TimeLine.prototype.labelsInvalidated_ = function(event) {
  * @return {number}
  */
 anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
-  var tag1Anchor = anychart.utils.getCoordinateByAnchor(
-    tag1.bounds,
-    /** @type {string} */(tag1.label.getFinalSettings('position'))
-  );
+  var pos1 = /** @type {string} */(tag1.label.getFinalSettings('position'));
+  var pos2 = /** @type {string} */(tag2.label.getFinalSettings('position'));
 
-  var tag2Anchor = anychart.utils.getCoordinateByAnchor(
-    tag2.bounds,
-    /** @type {string} */(tag2.label.getFinalSettings('position'))
-  );
+  var tag1Anchor = anychart.utils.getCoordinateByAnchor(tag1.bounds, pos1);
+  var tag2Anchor = anychart.utils.getCoordinateByAnchor(tag2.bounds, pos2);
 
   return (tag1Anchor.x - tag2Anchor.x) || -1;
 };
@@ -6508,7 +6491,7 @@ anychart.ganttModule.TimeLine.prototype.serialize = function() {
   json['markers'] = this.markers().serialize();
   json['header'] = this.header().serialize();
 
-  anychart.core.settings.serialize(this, anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS, json, void 0, void 0, true);
+  anychart.core.settings.serialize(this, anychart.ganttModule.TimeLine.DESCRIPTORS, json, void 0, void 0, true);
 
   json['elements'] = this.elements().serialize();
   json['connectors'] = this.connectors().serialize();
@@ -6567,7 +6550,7 @@ anychart.ganttModule.TimeLine.prototype.setupByJSON = function(config, opt_defau
   if (('header' in config) && !opt_default)
     this.header().setupInternal(false, config['header']);
 
-  anychart.core.settings.deserialize(this, anychart.ganttModule.TimeLine.COLOR_DESCRIPTORS, config, opt_default);
+  anychart.core.settings.deserialize(this, anychart.ganttModule.TimeLine.DESCRIPTORS, config, opt_default);
 
   this.elements().setupInternal(!!opt_default, config['elements']);
   this.milestones().setupInternal(!!opt_default, config['milestones']);
