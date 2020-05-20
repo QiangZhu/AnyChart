@@ -5909,10 +5909,10 @@ anychart.ganttModule.TimeLine.tagsBinaryInsertCallback = function(tag1, tag2) {
 
 
 /**
- * Calculates element row number by it's position.
+ * Calculates element row number by bounds.
  *
  * @param {anychart.math.Rect} elementBounds - Element bounds.
- * @return {number} - Row.
+ * @return {number} - Row number.
  * @private
  */
 anychart.ganttModule.TimeLine.prototype.getElementRowNumber_ = function(elementBounds) {
@@ -5940,7 +5940,7 @@ anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
   for (var i = startIndex; i <= endIndex; i++) {
     /*
       Tags are used, because they have all the information needed to crop labels.
-      They contain tag bounds and instance of label being drawn. And also when we collect
+      They contain element bounds and instance of label being drawn. And also when we collect
       tags we only get what is drawn on the screen.
      */
     var tags = this.tagsForCropLabels_[i] || [];
@@ -5993,9 +5993,10 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
 
 
 /**
- * Returns left restraint for current label, based on previous tag and label.
- * It is rightmost x value of previous tag, which is either label right boundary,
- * or tag itself right boundary if label is disabled.
+ * Returns left restraint, based on previous element and label bounds.
+ * Left restraint is always the rightmost x value of previous element or label.
+ * If label is enabled, it is label right boundary. If label is disabled,
+ * it is element right boundary.
  *
  * @param {?anychart.ganttModule.TimeLine.Tag} prev - Previous tag.
  * @returns {number} - Left restraint for current label.
@@ -6003,12 +6004,15 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
  */
 anychart.ganttModule.TimeLine.prototype.getLeftRestraint_ = function(prev) {
   if (prev) {
+    var elementRightBoundary = prev.bounds.getRight();
+
     if (prev.label.enabled()) {
+      // Previous label might have been cropped. Draw method updates bounds.
       prev.label.draw();
       var prevLabelRight = this.getTagLabelBounds_(prev.label).getRight();
-      return Math.max(prev.bounds.getRight(), prevLabelRight);
+      return Math.max(elementRightBoundary, prevLabelRight);
     } else {
-      return prev.bounds.getRight();
+      return elementRightBoundary;
     }
   }
 
