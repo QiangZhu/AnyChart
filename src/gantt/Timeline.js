@@ -6097,6 +6097,7 @@ anychart.ganttModule.TimeLine.prototype.cropTagsLabels_ = function(tags) {
 
 /**
  * Inserts tag using binary insert, to have sorted array.
+ * These tags are later used to crop elements labels.
  *
  * @param {anychart.ganttModule.TimeLine.Tag} tag
  */
