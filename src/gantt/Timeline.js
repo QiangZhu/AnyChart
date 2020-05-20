@@ -6082,9 +6082,9 @@ anychart.ganttModule.TimeLine.prototype.getTagLabelBounds_ = function(label) {
  */
 anychart.ganttModule.TimeLine.prototype.cropTagsLabels_ = function(tags) {
   for (var i = 0; i < tags.length; i++) {
-    var previousTag = i > 0 ? tags[i - 1] : null;
+    var previousTag = tags[i - 1] || null;
     var currentTag = tags[i];
-    var nextTag = (i < (tags.length - 1)) ? tags[i + 1] : null;
+    var nextTag = tags[i + 1] || null;
 
     this.cropCurrentTagLabel_(previousTag, currentTag, nextTag);
   }
