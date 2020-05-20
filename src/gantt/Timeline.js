@@ -5953,7 +5953,7 @@ anychart.ganttModule.TimeLine.prototype.cropElementsLabels_ = function() {
  * Returns rightmost available x value for current tag label.
  *
  * @param {anychart.ganttModule.TimeLine.Tag} cur - Current tag.
- * @param {anychart.ganttModule.TimeLine.Tag?} next - Next tag.
+ * @param {?anychart.ganttModule.TimeLine.Tag} next - Next tag.
  * @returns {number} - Right restraint for current tag label.
  * @private
  */
@@ -5997,7 +5997,7 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
  * It is rightmost x value of previous tag, which is either label right boundary,
  * or tag itself right boundary if label is disabled.
  *
- * @param {anychart.ganttModule.TimeLine.Tag?} prev - Previous tag.
+ * @param {?anychart.ganttModule.TimeLine.Tag} prev - Previous tag.
  * @returns {number} - Left restraint for current label.
  * @private
  */
@@ -6019,9 +6019,9 @@ anychart.ganttModule.TimeLine.prototype.getLeftRestraint_ = function(prev) {
 /**
  * Crops current tag label, taking previous and next tags and their labels into account.
  *
- * @param {anychart.ganttModule.TimeLine.Tag?} prev - Previous tag.
- * @param {anychart.ganttModule.TimeLine.Tag?} cur - Current tag.
- * @param {anychart.ganttModule.TimeLine.Tag?} next - Next tag.
+ * @param {?anychart.ganttModule.TimeLine.Tag} prev - Previous tag.
+ * @param {?anychart.ganttModule.TimeLine.Tag} cur - Current tag.
+ * @param {?anychart.ganttModule.TimeLine.Tag} next - Next tag.
  */
 anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cur, next) {
   var curTagLabelBounds = this.getTagLabelBounds_(cur.label);
