@@ -5968,15 +5968,15 @@ anychart.ganttModule.TimeLine.prototype.getRightRestraint_ = function(cur, next)
   var halfDeltaX = cur.bounds.getRight() + delta / 2;
 
   /*
-    ● - next tag
-    █ - current tag
+    ● - next element
+    █ - current element
     As simple as that:
-      1) If next label is righter than next tag itself, right restraint is left side of the next tag.
+      1) If next label is righter than next element itself, right restraint is left side of the next element.
         █Long lab●Long label text
-      2) If next label is on the left side, but no further than middle point between current tag right
-        and next tag left, next label left side is a restraint.
-        █Long label text:Long●
-      3) If next label is on the left and crosses the middle point between tags, use middle point as a restraint.
+      2) If next label is on the left side, but no further than middle point between current element right
+        and next element left, next label left side is a restraint.
+        █Long label text:Short●
+      3) If next label is on the left and crosses the middle point between elements, use middle point as a restraint.
         █Long la:Long la●
    */
 
