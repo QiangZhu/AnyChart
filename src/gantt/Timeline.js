@@ -6042,10 +6042,13 @@ anychart.ganttModule.TimeLine.prototype.cropCurrentTagLabel_ = function(prev, cu
     newWidth = Math.min(anchorPoint.x - labelFinalLeft, labelFinalRight - anchorPoint.x) * 2;
   }
 
-  if (newWidth >= 20 && newWidth < curTagLabelBounds.width) {
+  // Minimum allowed width, currently is not configurable.
+  var minimumAllowedWidth = 20;
+
+  if (newWidth >= minimumAllowedWidth && newWidth < curTagLabelBounds.width) {
     cur.label.width(newWidth);
     cur.label.height(curTagLabelBounds.height);
-  } else if (newWidth < 20) {
+  } else if (newWidth < minimumAllowedWidth) {
     cur.label.enabled(false);
   }
 };
