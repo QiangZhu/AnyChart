@@ -6100,11 +6100,25 @@ anychart.ganttModule.TimeLine.prototype.insertTagForCropLabels_ = function(tag) 
   if (!goog.isArray(this.tagsForCropLabels_[tag.row])) {
     this.tagsForCropLabels_[tag.row] = [];
   }
-  var isResourcePeriodOrMilestone = (tag.type === anychart.enums.TLElementTypes.PERIODS) || (tag.type === anychart.enums.TLElementTypes.MILESTONES);
-  var isProjectMilestonePreview = tag.type === anychart.enums.TLElementTypes.MILESTONES_PREVIEW;
+  
+  var isResourcePeriodOrMilestone =
+    (tag.type === anychart.enums.TLElementTypes.PERIODS) ||
+    (tag.type === anychart.enums.TLElementTypes.MILESTONES);
+  
+    var isProjectMilestonePreview =
+    (tag.type === anychart.enums.TLElementTypes.MILESTONES_PREVIEW);
+  
   var isResource = this.controller.isResources();
-  if ((isResource && isResourcePeriodOrMilestone) || (!isResource && isProjectMilestonePreview)) {
-    goog.array.binaryInsert(this.tagsForCropLabels_[tag.row], tag, anychart.ganttModule.TimeLine.tagsBinaryInsertCallback);
+
+  var suits1 = (isResource && isResourcePeriodOrMilestone);
+  var suits2 = (!isResource && isProjectMilestonePreview);
+
+  if (suits1 || suits2) {
+    goog.array.binaryInsert(
+      this.tagsForCropLabels_[tag.row],
+      tag,
+      anychart.ganttModule.TimeLine.tagsBinaryInsertCallback
+    );
   }
 };
 
