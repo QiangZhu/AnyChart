@@ -112,6 +112,7 @@ anychart.core.ui.LabelsSettings = function(opt_skipDefaultThemes) {
    */
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['format', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
+    ['maxLength', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
     ['adjustFontSize', 0, 0], //TODO (A.Kudryavtsev): Not supported for a while.
     ['fontVariant', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
     ['letterSpacing', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
@@ -258,6 +259,7 @@ anychart.core.ui.LabelsSettings.DESCRIPTORS = (function() {
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'lineHeight', anychart.core.settings.numberOrStringNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'minFontSize', anychart.core.settings.numberOrStringNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'maxFontSize', anychart.core.settings.numberOrStringNormalizer],
+    [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'maxLength', anychart.core.settings.numberOrNullNormalizer],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'vAlign', anychart.enums.normalizeVAlign],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'anchor', anychart.enums.normalizeAnchor],
     [anychart.enums.PropertyHandlerType.SINGLE_ARG, 'height', anychart.core.settings.numberOrPercentNormalizer],
@@ -467,6 +469,19 @@ anychart.core.ui.LabelsSettings.prototype.flatten = function() {
   return /** @type {!Object} */ (this.flatSettings_);
 };
 
+/**
+ *
+ * @param text
+ * @return {string}
+ */
+anychart.core.ui.LabelsSettings.prototype.applyInternalTextFormatters = function(text) {
+  var maxLength = /**@type {number}*/(this.getOption('maxLength'));
+  if (maxLength != null) {
+    text = text.slice(0, maxLength);
+  }
+
+  return text;
+};
 
 /**
  * Call formatter to get text value by context.
@@ -479,7 +494,8 @@ anychart.core.ui.LabelsSettings.prototype.getText = function(context) {
     format = anychart.core.utils.TokenParser.getInstance().getFormat(format);
   var val = format.call(context, context);
   val = goog.isDef(val) ? String(val) : '';
-  return val;
+
+  return this.applyInternalTextFormatters(val);
 };
 
 
