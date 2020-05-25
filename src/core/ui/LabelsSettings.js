@@ -5,6 +5,7 @@ goog.provide('anychart.core.ui.LabelsSettings');
 goog.require('anychart.core.Base');
 goog.require('anychart.core.settings');
 goog.require('anychart.core.ui.Background');
+goog.require('anychart.core.ui.InternalLabelsFormatter');
 goog.require('anychart.core.utils.Padding');
 
 goog.require('goog.cssom');
@@ -95,7 +96,25 @@ anychart.core.ui.LabelsSettings = function(opt_skipDefaultThemes) {
    */
   this.suspendedSignal = 0;
 
+  /**
+   * Trim text value if text contains more characters than needed.
+   *
+   * @type {anychart.core.ui.InternalLabelsFormatter}
+   */
+  this.lengthFormatter = new anychart.core.ui.InternalLabelsFormatter();
 
+  /**
+   * Invalidation hook for 'maxLength' property.
+   *
+   * @this {anychart.core.ui.LabelsSettings}
+   */
+  function maxLengthInvalidationHook() {
+    this.resetFlatSettings();
+
+    var maxLengthValue = /**@type {?number}*/(this.getOption('maxLength'));
+    var formatterFn = anychart.core.ui.InternalLabelsFormatter.formatters.getLengthFormatter(maxLengthValue, '...');
+    this.lengthFormatter.set(formatterFn);
+  }
   /*
     Please be very careful on using these signals, here are some
     special cases like:
@@ -112,7 +131,7 @@ anychart.core.ui.LabelsSettings = function(opt_skipDefaultThemes) {
    */
   anychart.core.settings.createDescriptorsMeta(this.descriptorsMeta, [
     ['format', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
-    ['maxLength', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
+    ['maxLength', 0, anychart.Signal.BOUNDS_CHANGED, 0, maxLengthInvalidationHook],
     ['adjustFontSize', 0, 0], //TODO (A.Kudryavtsev): Not supported for a while.
     ['fontVariant', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
     ['letterSpacing', 0, anychart.Signal.BOUNDS_CHANGED, 0, this.resetFlatSettings],
@@ -470,16 +489,13 @@ anychart.core.ui.LabelsSettings.prototype.flatten = function() {
 };
 
 /**
+ * Applies text formatters to the passed text value and return it.
  *
- * @param text
- * @return {string}
+ * @param {string} text - Text value for process.
+ * @return {string} - Formatted text value.
  */
-anychart.core.ui.LabelsSettings.prototype.applyInternalTextFormatters = function(text) {
-  var maxLength = /**@type {number}*/(this.getOption('maxLength'));
-  if (maxLength != null) {
-    text = text.slice(0, maxLength);
-  }
-
+anychart.core.ui.LabelsSettings.prototype.applyInternalTextFormatters = function (text) {
+  text = this.lengthFormatter.applyFormat(text);
   return text;
 };
 
